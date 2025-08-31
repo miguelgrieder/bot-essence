@@ -1,0 +1,11 @@
+fastapi
+starlette
+uvicorn[standard]
+slowapi
+requests
+pydantic
+httpx
+pydantic-settings
+pymongo
+clerk-backend-api
+pydantic[email]

@@ -1,0 +1,17 @@
+version: "3.5"
+
+services:
+  app:
+    extends:
+      file: docker-compose.yml
+      service: app
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - TZ=America/Sao_Paulo
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests

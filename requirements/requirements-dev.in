@@ -1,0 +1,12 @@
+-e file:.
+black
+ruff
+mypy
+tox
+pytest
+pytest-cov
+pytest-mock
+pytest-asyncio
+python-dotenv
+types-redis
+types-requests

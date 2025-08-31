@@ -1,0 +1,99 @@
+[build-system]
+requires = ['setuptools>=65.0', 'wheel']
+build-backend = 'setuptools.build_meta'
+
+[project]
+authors = [{ name = "Essência bot" }]
+name = "bot_essence"
+description = "Bot essência"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+classifiers = [
+  "Typing :: Typed",
+  "Framework :: FastAPI",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+]
+dynamic = ["version", "dependencies", "readme"]
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+version = { attr = "bot_essence.version.VERSION" }
+readme = { file = "README.md" }
+dependencies = { file = "requirements/requirements.txt" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+privatebox = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=bot_essence"
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 100
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+strict = true
+show_error_codes = true
+show_column_numbers = true
+exclude = ['^data/']
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+precision = 2
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+lint.select = [
+  "A",   # flake8-builtins
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "C4",  # flake8-comprehensions
+  "B",   # flake8-bugbear
+  "N",   # pep8-naming
+  "C90", # mccabe
+  "S",   # flake8-bandit
+  "T20", # flake8-print
+  "ERA", # eradicate
+  "RUF", # Ruff-specific rules
+  "TRY", # tryceratops
+  "D",   # pydocstyle
+  "I",   # isort
+]
+lint.ignore = [
+  "D1",   # pydocstyle: missing docstrings
+  "D203", # pydocstyle: one-blank-line-before-class
+  "D213", # pydocstyle: multi-line-summary-second-line
+  "ERA001", # commented-out code
+  "TRY002", # general exception
+  "TRY003", # long messages in the exception class
+]
+line-length = 100
+
+[tool.ruff.lint.isort]
+known-first-party = ["bot_essence"]
+known-third-party = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]     # Use of `assert`
+"__init__.py" = ["F401"] # imported but unused
+# Invalid module name:     (Remover após alterar o nome do pacote)
+"src/bot_essence/__init__.py" = ["N999"]
+"src/bot_essence/services/__init__.py" = ["N999"]
+"src/bot_essence/services/generic_service/__init__.py" = ["N999"]
+
+[tool.ruff.lint.pep8-naming]
+# Allow Pydantic's `@field_validator` and `@model_validator` decorator to trigger class method treatment.
+classmethod-decorators = [
+  "classmethod",
+  "pydantic.field_validator",
+  "pydantic.model_validator",
+]

@@ -1,0 +1,17 @@
+version: "3.5"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+     - TZ=America/Sao_Paulo
+    env_file:
+      - .env
+    volumes:
+      - ${COMPOSE_MAP_LOGS_DIR:-./logs}:/app/logs
+      - ${COMPOSE_MAP_DATA_DIR:-./data}:/app/data
+    ports:
+      - ${APP_PORT:-8000}:${APP_PORT:-8000}

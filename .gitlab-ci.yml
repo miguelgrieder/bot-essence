@@ -1,0 +1,11 @@
+stages:
+    - test
+
+lint_and_test:
+    image: python:3.12
+    stage: test
+    before_script:
+        - pip install tox
+    script:
+        - tox
+    coverage: '/TOTAL.*\s+(\d+(?:\.\d+)?%)$/'

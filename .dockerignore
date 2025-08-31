@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Configs
+.env
+
+# Virtual environment
+.venv
+env
+venv
+
+# Tests
+tests/
+.tox
+.pytest_cache
+.coverage
+coverage
+cover
+.cache
+htmlcov
+
+# Development
+.vscode
+.idea
+
+# Linters
+.mypy_cache
+
+# Other
+**/__pycache__
+**/.DS_Store
+**/*.egg-info
+**/*.pyc
+**/*.log
+**/*.egg
+**/*.db
+**/*.pid
