@@ -46,6 +46,10 @@ class Settings(BaseSettings):
     # - Development -
     dev_uvicorn_reload: bool = False
 
+    # - Waha -
+    waha_url: str
+    waha_token: str
+
     class Config:
         env_file = ".env"
 
