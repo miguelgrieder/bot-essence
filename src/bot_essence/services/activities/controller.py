@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
 import requests
 from pymongo import MongoClient
@@ -21,59 +21,46 @@ db = client["bot-essence"]
 activity_collection: Collection[dict[str, Any]] = db["data"]
 
 
-def send_message(chat_id: str, message: str) -> requests.Response:
-    url = f"{settings.waha_url}/api/sendText"
-    headers = {
+# Unified WAHA request caller to manage auth headers and timeout
+DEFAULT_WAHA_TIMEOUT = 30
+
+
+def _waha_headers(extra: Optional[dict[str, str]] = None) -> dict[str, str]:
+    headers: dict[str, str] = {
         "X-Api-Key": settings.waha_token,
         "Content-Type": "application/json",
     }
+    if extra:
+        headers.update(extra)
+    return headers
+
+
+def waha_post(path: str, json: dict[str, Any], timeout: Optional[int] = None) -> requests.Response:
+    url = f"{settings.waha_url}{path}"
+    effective_timeout = timeout if timeout is not None else DEFAULT_WAHA_TIMEOUT
+    return requests.post(url=url, json=json, headers=_waha_headers(), timeout=effective_timeout)
+
+
+def send_message(chat_id: str, message: str) -> requests.Response:
     payload = {
         "session": "default",
         "chatId": chat_id,
         "text": message,
     }
-    req = requests.post(
-        url=url,
-        json=payload,
-        headers=headers,
-        timeout=30,
-    )
-    return req
+    return waha_post("/api/sendText", json=payload)
 
 
 def start_typing(chat_id: str) -> requests.Response:
-    url = f"{settings.waha_url}/api/startTyping"
-    headers = {
-        "Content-Type": "application/json",
-        "X-Api-Key": settings.waha_token,
-    }
     payload = {
         "session": "default",
         "chatId": chat_id,
     }
-    req = requests.post(
-        url=url,
-        json=payload,
-        headers=headers,
-        timeout=30,
-    )
-    return req
+    return waha_post("/api/startTyping", json=payload)
 
 
 def stop_typing(chat_id: str) -> requests.Response:
-    url = f"{settings.waha_url}/api/stopTyping"
-    headers = {
-        "X-Api-Key": settings.waha_token,
-        "Content-Type": "application/json",
-    }
     payload = {
         "session": "default",
         "chatId": chat_id,
     }
-    req = requests.post(
-        url=url,
-        json=payload,
-        headers=headers,
-        timeout=30,
-    )
-    return req
+    return waha_post("/api/stopTyping", json=payload)
