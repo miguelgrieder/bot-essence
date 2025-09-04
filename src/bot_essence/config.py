@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     # - Waha -
     waha_url: str
     waha_token: str
+    waha_self_id: str = ""
 
     class Config:
         env_file = ".env"

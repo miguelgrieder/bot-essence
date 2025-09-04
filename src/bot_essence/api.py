@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from bot_essence.services.activities.router import router as activities_router
+from bot_essence.services.webhook.router import router as webhook_router
 
 
 class ErrorMessage(BaseModel):
@@ -29,4 +29,4 @@ router = APIRouter(
 
 
 # Add routers
-router.include_router(activities_router, prefix="/activities", tags=["activities"])
+router.include_router(webhook_router, prefix="/webhook", tags=["webhook"])
