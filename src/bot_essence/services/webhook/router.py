@@ -11,8 +11,11 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def is_group_chat(chat_id: str) -> bool:
-    # WhatsApp convention: groups end with "@g.us", privates end with "@c.us"
+def is_group_message(body: dict[str, Any]) -> bool:
+    payload = body.get("payload", {})
+    chat_id = payload.get("from") or payload.get("id", {}).get("remote")
+    if not chat_id:
+        return False
     return chat_id.endswith("@g.us")
 
 
@@ -55,7 +58,8 @@ def group_message_targets_me(payload: Dict[str, Any], self_jid: Optional[str]) -
 
     # 1) Check explicit mentions list
     mentions = (
-        payload.get("mentionedJidList")
+        payload.get("media", {}).get("mentionedIds")
+        or payload.get("mentionedJidList")
         or payload.get("mentions")
         or context.get("mentionedJidList")
         or []
@@ -77,7 +81,8 @@ def group_message_targets_me(payload: Dict[str, Any], self_jid: Optional[str]) -
 
     # Some payloads carry participant info for quoted messages
     quoted_participant = (
-        context.get("quotedParticipant")
+        payload.get("_data", {}).get("quotedParticipant")
+        or context.get("quotedParticipant")
         or context.get("participant")
         or payload.get("quotedParticipant")
     )
@@ -141,7 +146,7 @@ def handle_group_message(body: dict[str, Any]) -> dict[str, Any]:
 
 
 def handle_message(body: dict[str, Any]) -> dict[str, Any]:
-    if is_group_chat(body.get("chatId") or ""):
+    if is_group_message(body):
         return handle_group_message(body)
     else:
         return handle_private_message(body)
