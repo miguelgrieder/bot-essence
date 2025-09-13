@@ -52,7 +52,8 @@ def extract_text(payload: Dict[str, Any]) -> str:
     return str(text) if text is not None else ""
 
 
-def group_message_targets_me(payload: Dict[str, Any], self_jid: Optional[str]) -> bool:
+def group_message_targets_me(payload: Dict[str, Any], self_jid: Optional[str]) -> Dict[str, Any]:
+    result = {"directed": False, "via": None}
     # If we don't know self_jid, try best-effort via context flags
     context = payload.get("context") or payload.get("contextInfo") or {}
 
@@ -69,7 +70,7 @@ def group_message_targets_me(payload: Dict[str, Any], self_jid: Optional[str]) -
         and isinstance(mentions, list)
         and any(m == self_jid for m in mentions if isinstance(m, str))
     ):
-        return True
+        return {"directed": True, "via": "mention"}
 
     # 2) Check if it's a reply to our message
     # Many WA libs include flags like fromMe, quotedFromMe or contextInfo.fromMe for replied message
@@ -77,7 +78,7 @@ def group_message_targets_me(payload: Dict[str, Any], self_jid: Optional[str]) -
         payload.get("quotedFromMe") or context.get("quotedFromMe") or context.get("fromMe")
     )
     if isinstance(quoted_from_me, bool) and quoted_from_me:
-        return True
+        return {"directed": True, "via": "quoted"}
 
     # Some payloads carry participant info for quoted messages
     quoted_participant = (
@@ -87,16 +88,16 @@ def group_message_targets_me(payload: Dict[str, Any], self_jid: Optional[str]) -
         or payload.get("quotedParticipant")
     )
     if self_jid and isinstance(quoted_participant, str) and quoted_participant == self_jid:
-        return True
+        return {"directed": True, "via": "quoted"}
 
     # 3) Heuristic: if text starts with an @mention of our number (when self_jid like 123@c.us)
     text = extract_text(payload)
     if self_jid and text:
         possible_num = self_jid.split("@")[0]
         if possible_num and (f"@{possible_num}" in text.replace(" ", "")):
-            return True
+            return {"directed": True, "via": "heuristic"}
 
-    return False
+    return result
 
 
 def handle_private_message(body: dict[str, Any]) -> dict[str, Any]:
@@ -126,7 +127,9 @@ def handle_group_message(body: dict[str, Any]) -> dict[str, Any]:
     text = extract_text(payload)
     self_jid = get_self_jid(body)
 
-    directed = group_message_targets_me(payload, self_jid)
+    targeting = group_message_targets_me(payload, self_jid)
+    directed = bool(targeting.get("directed"))
+    via = targeting.get("via")
 
     if directed and isinstance(chat_id, str) and chat_id:
         start_typing(chat_id=chat_id)
@@ -136,12 +139,13 @@ def handle_group_message(body: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "status": "success",
-        "processed": bool(directed),
+        "processed": directed,
         "reason": None if directed else "ignored: not mentioning nor replying to the bot",
         "chat_type": "group",
         "chat_id": chat_id,
         "received_text": text,
         "self_jid": self_jid,
+        "directed_via": via,
     }
 
 
