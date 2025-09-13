@@ -5,7 +5,12 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 
 from bot_essence import config
-from bot_essence.services.waha.requests import send_message, stop_typing, start_typing
+from bot_essence.services.waha.requests import (
+    get_group_info,
+    send_message,
+    start_typing,
+    stop_typing,
+)
 
 settings = config.get_settings()
 log = logging.getLogger(__name__)
@@ -142,7 +147,8 @@ def handle_group_message(body: dict[str, Any]) -> dict[str, Any]:
 
     if directed and isinstance(chat_id, str) and chat_id:
         start_typing(chat_id=chat_id)
-        response = f"(grupo) Resposta Automática :) - {text}"
+        group_info = get_group_info(chat_id)
+        response = f"(grupo) Resposta Automática :) - {text}\nGrupo: {group_info}"
         send_message(chat_id=chat_id, message=response)
         stop_typing(chat_id=chat_id)
 
